@@ -7,6 +7,7 @@ Integrated IoT platform for smart building management with modular development.
 - Feature branches: `feature/iot-sensors`, `feature/web-dashboard`.
 - `feature/iot-sensors`: Sensor data collection module.
 - `feature/web-dashboard`: User interface dashboard.
+- `feature/user-authentication`: User authentication module.
 
 ## Commit Guidelines
 Use format: `<type>: <description>` (e.g., `feat: add sensor API`).
