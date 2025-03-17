@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Flake8 (Static Analysis)
+        run: |
+          pip install flake8
+          flake8 . --count --show-source --statistics
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run pytest
+        run: pytest
+
+  deploy-staging:
+    needs: [static-analysis, unit-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Staging
+        run: echo "Deploying to staging environment..."
+        # جایگزین کنید با اسکریپت واقعی استقرار (مثلاً Heroku/AWS)
