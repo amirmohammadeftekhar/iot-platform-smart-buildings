@@ -16,21 +16,37 @@ jobs:
           pip install flake8
           flake8 . --count --show-source --statistics
   auto-merge:
-  needs: [unit-tests]
-  runs-on: ubuntu-latest
-  steps:
-    - name: Auto-merge PR
-      uses: actions/github-script@v6
-      with:
-        script: |
-          await github.rest.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: context.payload.pull_request.number,
-            merge_method: 'squash'
-          })
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-merge PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash'
+            })
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    notify-telegram:
+      needs: [static-analysis, unit-tests, deploy-staging, auto-merge]
+      if: failure() # فقط در صورت شکست هر یک از Jobs
+      runs-on: ubuntu-latest
+      steps:
+        - name: Notify Telegram
+          uses: appleboy/telegram-action@v0.1.0
+          with:
+            to: ${{ secrets.TELEGRAM_CHAT_ID }}
+            token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+            message: |
+              ❌ خط لوله CI/CD شکست خورد!
+              - ریپو: ${{ github.repository }}
+              - کامیت: ${{ github.sha }}
+              - لاگ خطا: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   unit-tests:
     runs-on: ubuntu-latest
